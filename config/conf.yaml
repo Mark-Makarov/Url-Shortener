@@ -1,4 +1,4 @@
-env: "development", "production"
+env: "development"
 storage_path: "./storage/storage.db"
 http_server:
   address: "localhost:9129"

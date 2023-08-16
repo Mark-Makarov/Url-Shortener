@@ -4,6 +4,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -20,9 +21,9 @@ type HTTPServer struct {
 }
 
 func MustLoad() Config {
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
+	configPath, err := filepath.Abs("../../config/conf.yaml")
+	if err != nil {
+		log.Fatalf("config path is not set: %s", err)
 	}
 
 	// check config file

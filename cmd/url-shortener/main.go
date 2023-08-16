@@ -2,6 +2,8 @@ package main
 
 import (
 	"Url-Shortener/internal/config"
+	"Url-Shortener/internal/lib/logger"
+	"Url-Shortener/internal/storage/sqlite"
 	"log/slog"
 	"os"
 )
@@ -15,7 +17,13 @@ func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
 
-	log.Info("test")
+	storage, err := sqlite.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to init DB", sl.Err(err))
+		os.Exit(1)
+	}
+
+	_ = storage
 }
 
 func setupLogger(env string) *slog.Logger {
