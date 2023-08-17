@@ -2,37 +2,41 @@ package main
 
 import (
 	"Url-Shortener/internal/config"
+	"Url-Shortener/internal/http-server/middleware/loggerMiddleware"
 	"Url-Shortener/internal/lib/logger"
 	"Url-Shortener/internal/storage/sqlite"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"log/slog"
 	"os"
-)
-
-const (
-	envDev  = "development"
-	envProd = "production"
 )
 
 func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
 
-	storage, err := sqlite.New(cfg.StoragePath)
+	_, err := sqlite.New(cfg.StoragePath)
 	if err != nil {
 		log.Error("failed to init DB", sl.Err(err))
 		os.Exit(1)
 	}
 
-	_ = storage
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(loggerMiddleware.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 }
 
 func setupLogger(env string) *slog.Logger {
 	var logger *slog.Logger
 
 	switch env {
-	case envDev:
+	case "development":
 		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envProd:
+	case "production":
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	}
 
