@@ -87,4 +87,39 @@ func (s *Storage) GetURL(alias string) (string, error) {
 	return resURL, nil
 }
 
-// TODO add Delete func
+func (s *Storage) DeleteURL(alias string) (string, int64, error) {
+	const op = "storage.mysql.DeleteURL"
+
+	stmt, err := s.db.Prepare("SELECT url FROM url WHERE alias = ?")
+	if err != nil {
+		return "", 0, fmt.Errorf("%s: prep statement: %w", op, err)
+	}
+
+	var url string
+	err = stmt.QueryRow(alias).Scan(&url)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", 0, storage.ErrAliasNotFound
+		}
+
+		return "", 0, fmt.Errorf("%s: exec statement: %w", op, err)
+	}
+
+	var delAliasId int64
+	err = s.db.QueryRow("SELECT id FROM url WHERE alias = ?", alias).Scan(&delAliasId)
+	if err != nil {
+		return "", 0, fmt.Errorf("%s: select deleted ID: %w", op, err)
+	}
+
+	deleteStmt, err := s.db.Prepare("DELETE FROM url WHERE alias = ?")
+	if err != nil {
+		return "", delAliasId, fmt.Errorf("%s: prep delete statement: %w", op, err)
+	}
+
+	_, err = deleteStmt.Exec(alias)
+	if err != nil {
+		return "", delAliasId, fmt.Errorf("%s: exec delete statement: %w", op, err)
+	}
+
+	return "deletion successful", delAliasId, nil
+}

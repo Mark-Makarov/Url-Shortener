@@ -1,0 +1,17 @@
+version: '1'
+services:
+  app:
+    build: .
+    ports:
+      - '9129:9129'
+    networks:
+      - app-network
+  db:
+    image: sqlite
+    volumes:
+      - ./data:/data
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge

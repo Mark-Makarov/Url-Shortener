@@ -3,6 +3,7 @@ package main
 import (
 	"Url-Shortener/internal/config"
 	"Url-Shortener/internal/http-server/handlers/redirect"
+	"Url-Shortener/internal/http-server/handlers/url/delete"
 	"Url-Shortener/internal/http-server/handlers/url/save"
 	"Url-Shortener/internal/http-server/middleware/loggerMiddleware"
 	"Url-Shortener/internal/lib/logger/sl"
@@ -43,6 +44,7 @@ func main() {
 		}))
 
 		r.Post("/", save.New(log, storage))
+		r.Delete("/{alias}", delete.New(log, storage))
 	})
 
 	router.Get("/{alias}", redirect.New(log, storage))

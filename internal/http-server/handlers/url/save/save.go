@@ -33,7 +33,7 @@ type URLSave interface {
 
 func New(log *slog.Logger, urlSaver URLSave) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.ur.save.New"
+		const op = "handlers.url.save.New"
 
 		log = log.With(
 			slog.String("op", op),
